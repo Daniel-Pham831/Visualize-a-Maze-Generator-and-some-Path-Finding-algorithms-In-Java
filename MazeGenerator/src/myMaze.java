@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.util.*;
 
-public class myMaze extends Rectangle{
+public class myMaze{
 	private final int MAZE_SIZE;
 	private int CELL_SIZE;
 	private final int w ;
@@ -16,7 +16,7 @@ public class myMaze extends Rectangle{
 	
 	private Cell start,end;
 	private Queue<Cell> visitedQueue;
-
+	private Stack<Cell> visitedS;
 	
 	myMaze(int mazeSize,int cellSize){
 		MAZE_SIZE = mazeSize;
@@ -68,9 +68,11 @@ public class myMaze extends Rectangle{
 		running = false;
 	}
 	
-	public void drawPathFinder(Graphics g) {
-
-		mazeFinderBFS(g);
+	public void drawPathFinder(Graphics g,int mode) {
+		if(mode == 0)
+			mazeFinderBFS(g); //Breath 
+		else if(mode == 1)
+			mazeFinderDFS(g); //Depth
 		
 		for(Cell x: pathsFromAtoB) {
 			x.drawPath(g, Color.pink);
@@ -162,6 +164,33 @@ public class myMaze extends Rectangle{
 	}
 	
 	
+	public void mazeFinderDFS(Graphics g) {
+
+		next = getOneNeighbor(current);
+		luuVetFromAtoB(current,next);
+		if(next == end) {
+			System.out.println("Finished");
+			finish = true;
+			taoPathTuEndToiStart();
+			return;
+		}
+		
+		if(next != end && next != null) {
+			visitedS.push(next);
+			next.visitedPath = true;
+			next.visited = true;
+			next.drawPath(g, Color.RED);
+		}else {
+			if(!visitedS.isEmpty()) {
+				current = visitedS.pop();
+			}
+			else {
+				return;
+			}
+		}
+	}
+	
+	
 	private void taoPathTuEndToiStart() {
 		pathsFromAtoB.add(end);
 		Cell tempParent = end.parent;
@@ -201,6 +230,7 @@ public class myMaze extends Rectangle{
 		start.visited = true;
 		end.visited = true;
 		visitedQueue = new LinkedList<Cell>();
+		visitedS = new Stack<Cell>();
 		pathsFromAtoB = new ArrayList<Cell>();
 		current = start;
 		next = current;

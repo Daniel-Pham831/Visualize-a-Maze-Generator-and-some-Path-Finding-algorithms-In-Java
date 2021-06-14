@@ -35,8 +35,12 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 	private JCheckBox mazeCheckbox;
 	
 	private JCheckBox BFSCheckbox;
+	private JComboBox algoBox;
+	private int mode ;
+	private JLabel algoBoxLabel;
 	
-	private myButton BFSButton;
+	
+	private myButton startSolvingButton;
 	private boolean flag = true;
 
 
@@ -126,7 +130,7 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 	
 		smallPanel.add(mazeCheckbox);
 		
-		
+		/*
 		//Check box
 		BFSCheckbox = new JCheckBox();
 		BFSCheckbox.setBounds(smallPanel.getSize().width/2-30, 285, 250, 30);
@@ -134,16 +138,40 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 		BFSCheckbox.setFont(new Font("",Font.BOLD,15));
 		BFSCheckbox.setFocusable(false);
 		smallPanel.add(BFSCheckbox);
+		*/
+		
+		
+		
+		
+		algoBoxLabel = new JLabel("Pathfinding Algorithms");
+		algoBoxLabel.setBounds(smallPanel.getSize().width/2-155, 370, 220, 30);
+		algoBoxLabel.setFont(new Font("",Font.BOLD,15));
+		smallPanel.add(algoBoxLabel);
+		
+		
+		
+		String[] algoList = {"Breadth First Search(BFS)","Depth First Search(DFS)"};// (0 == BFS , 1 = DFS)
+		algoBox = new JComboBox(algoList);
+		algoBox.setBounds(smallPanel.getSize().width/2-160, 400, 220, 30);
+		algoBox.setFont(new Font("",Font.BOLD,15));
+		algoBox.setFocusable(false);
+		algoBox.addActionListener(this);
+		//algoBox.setEnabled(false);
+		mode = algoBox.getSelectedIndex(); // (0 == BFS , 1 = DFS)
+		smallPanel.add(algoBox);
+		
+		
+	
 		
 		
 		//BFS button
-		BFSButton = new myButton("Start",40, 290, 100, 130,new Color(255, 231, 122));
-		smallPanel.add(BFSButton);
-		BFSButton.addActionListener(this);
-		BFSButton.setEnabled(false);
+		startSolvingButton = new myButton("Start",smallPanel.getSize().width/2-130-20, 300, 130, 60,new Color(255, 231, 122));
+		smallPanel.add(startSolvingButton);
+		startSolvingButton.addActionListener(this);
+		startSolvingButton.setEnabled(false);
 		
 		//nút resetMaze
-		resetButton = new myButton("Reset Maze",40, 440, 100, 130,new Color(44, 95, 45));
+		resetButton = new myButton("Reset Maze",smallPanel.getSize().width/2+20, 300, 130, 60,new Color(44, 95, 45));
 		smallPanel.add(resetButton);
 		resetButton.addActionListener(this);
 				
@@ -166,27 +194,28 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 		
 		if(maze.checkFinished()) {
 			reMazeButton.setEnabled(true);
-			BFSButton.setEnabled(true);
-			
+			startSolvingButton.setEnabled(true);
+			algoBox.setEnabled(true);
 		}else {
-			BFSButton.setEnabled(false);
+			startSolvingButton.setEnabled(false);
 			resetButton.setEnabled(false);
+			algoBox.setEnabled(false);
 		}
 		
 		super.paintComponent(g);
 		
 		
+	
 		
 		
 		maze.drawMaze(g);
 		
 	
 		if(!flag) {
-			maze.drawPathFinder(g);
+			maze.drawPathFinder(g,mode);
 			if(maze.finish) {
 				mazeCheckbox.setEnabled(true);
-				BFSButton.setEnabled(true);
-				BFSCheckbox.setEnabled(true);
+				startSolvingButton.setEnabled(true);
 				resetButton.setEnabled(true);
 				tm.stop();
 			}
@@ -212,14 +241,20 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 	}
 	
 	
+	
+	
+	
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+	
+
+		
+		
+		
 		//nhan nut re-maze, tạo lại maze mới
 		if(e.getSource()==reMazeButton) {
-			if(BFSCheckbox.isSelected()) {
-				BFSCheckbox.setSelected(false);
-				flag = true;
-			}
+			flag = true;
 			mazeCheckbox.setEnabled(true);
 			initMaze();
 			reset();
@@ -237,29 +272,37 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 				startButton.setText("Start");
 		}
 		
+	
+
+		if(e.getSource()==algoBox) {
+			mode = algoBox.getSelectedIndex();
+		}
+	
+		
+		
+		
+		//start của bên thuật toán tìm đường
+		if(e.getSource() == startSolvingButton) {
+			mazeCheckbox.setSelected(false);
+			mazeCheckbox.setEnabled(false);
+			
+			if(flag) {
+				maze.initStartAndEnd();
+				flag = false;
+			}
+			
+		}
+		
+		
 		//nút reset maze
 		if(e.getSource()==resetButton) {
 			flag = true;
-			BFSCheckbox.setEnabled(true);
 			maze.resetMaze();
 			tm.start();
 		}
 		
-	
-		//start của bên thuật toán tìm đường
-		if(e.getSource() == BFSButton) {
-			mazeCheckbox.setSelected(false);
-			mazeCheckbox.setEnabled(false);
-			
-			if(BFSCheckbox.isSelected()) {
-				System.out.println("Start running maze finder");
-				BFSCheckbox.setEnabled(false);
-				if(flag) {
-					maze.initStartAndEnd();
-					flag = false;
-				}
-			}	
-		}
+		
+		
 		
 		
 		
@@ -279,14 +322,10 @@ public class myPanel extends JPanel implements ActionListener,ChangeListener{
 		if(e.getSource()==cellSlider) {
 			if(cellSlider.getValue()%5==0) {
 				mazeCheckbox.setEnabled(true);
-				BFSCheckbox.setEnabled(true);
 				cellLabel.setText("Cell's size adjustment: " + cellSlider.getValue());
 				cellSize = cellSlider.getValue();
 				startButton.setText("Start");
-				if(BFSCheckbox.isSelected()) {
-					BFSCheckbox.setSelected(false);
-					flag = true;
-				}
+				flag = true;
 				initMaze();
 				reset();
 			}

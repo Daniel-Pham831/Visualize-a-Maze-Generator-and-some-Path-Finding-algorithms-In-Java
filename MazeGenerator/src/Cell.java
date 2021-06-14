@@ -7,7 +7,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Cell extends Rectangle{
+public class Cell{
 	public int row,r,col,c,cellSize;
 	public boolean[] Walls = {true,true,true,true}; //top  right  bottom  left
 	public ArrayList<Cell> next;
